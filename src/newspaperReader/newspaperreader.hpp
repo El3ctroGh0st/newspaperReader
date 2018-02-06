@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "xmlparser.hpp"
+
 class NewspaperReader : public QMainWindow
 {
     Q_OBJECT
@@ -10,6 +12,12 @@ class NewspaperReader : public QMainWindow
 public:
     NewspaperReader(QWidget *parent = 0);
     ~NewspaperReader();
+
+public slots:
+    void printResult();
+
+private:
+    XMLParser *pars = nullptr;
 };
 
 #endif // NEWSPAPERREADER_HPP

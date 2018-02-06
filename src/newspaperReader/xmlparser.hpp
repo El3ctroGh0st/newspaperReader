@@ -9,11 +9,11 @@ class XMLParser : public QObject
 {
     Q_OBJECT
 public:
-    explicit XMLParser(QObject *parent = 0) {}
-    XMLParser(QUrl link, QObject *parent = 0) : downloadLink(link) {}
+    explicit XMLParser(QObject *parent = 0) : QObject(parent) {}
+    XMLParser(QUrl link, QObject *parent = 0) : QObject(parent), downloadLink(link) {}
 
     QString getContent() const { return downloadData; }
-    QStringList getTitles() const { return titles; }
+    QVector<QVector<QString>> getTitles() const { return titles; }
     void downloadXML();
 
 public slots:
@@ -21,12 +21,18 @@ public slots:
     void parseContent();
 
 signals:
-    void downloaded();
+    void downloadComplete();
+    void parsingFinished();
 
 private:
-    QUrl downloadLink;
+    QUrl downloadLink = QUrl();
     QString downloadData;
-    QStringList titles;
+
+    //[0] -> title
+    //[1] -> link
+    //[2] -> description
+    //[3] -> pubDate
+    QVector<QVector<QString>> titles;
 };
 
 #endif // XMLPARSER_HPP
