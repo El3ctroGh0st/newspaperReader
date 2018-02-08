@@ -2,6 +2,12 @@
 #define NEWSPAPERREADER_HPP
 
 #include <QMainWindow>
+#include <QGroupBox>
+#include <QPushButton>
+#include <QSpacerItem>
+#include <QListWidget>
+//#include <QStandardItemModel>
+#include <QVBoxLayout>
 
 #include "xmlparser.hpp"
 
@@ -13,11 +19,34 @@ public:
     NewspaperReader(QWidget *parent = 0);
     ~NewspaperReader();
 
+    void setupUI();
+
+    void setupRSSBox();
+    void updateTable();
+
 public slots:
-    void printResult();
+    void getResult();
+    void addSource();
 
 private:
+    QVector<QVector<QString>> titles;
+
     XMLParser *pars = nullptr;
+
+    QWidget *centralWidget = nullptr;
+    QVBoxLayout *centralLayout = nullptr;
+    QMenuBar *menuBar = nullptr;
+
+    QGroupBox *rssBox = nullptr;
+    QVBoxLayout *rssBoxLayout = nullptr;
+    QListWidget *rssList = nullptr;
+    //QStandardItemModel *rssModel = nullptr;
+
+    QHBoxLayout *buttonLayout = nullptr;
+    QSpacerItem *buttonSpacer = nullptr;
+    QPushButton *refreshButton = nullptr;
+    QPushButton *addButton = nullptr;
+
 };
 
 #endif // NEWSPAPERREADER_HPP

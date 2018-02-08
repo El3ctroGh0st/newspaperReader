@@ -1,12 +1,16 @@
 #include "newspaperreader.hpp"
 
+#include "addsourcedialog.hpp"
+
+#include <QFormLayout>
+#include <QLabel>
+
 NewspaperReader::NewspaperReader(QWidget *parent)
     : QMainWindow(parent)
 {
-    pars = new XMLParser(QUrl("https://derstandard.at/?page=rss&ressort=seite1"), this);
-    pars->downloadXML();
+    setupUI();
 
-    connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::printResult);
+    connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSource);
 }
 
 NewspaperReader::~NewspaperReader()
@@ -14,15 +18,82 @@ NewspaperReader::~NewspaperReader()
 
 }
 
-void NewspaperReader::printResult()
+void NewspaperReader::getResult()
 {
-    QVector<QVector<QString>> titles = pars->getTitles();
+    QVector<QVector<QString>> parsedTitles = pars->getTitles();
 
+    for(int i = 0; i < parsedTitles.size(); ++i)
+    {
+        titles.push_back(parsedTitles.at(i));
+    }
+
+    updateTable();
+}
+
+void NewspaperReader::addSource()
+{
+    QUrl url;
+    QString name;
+
+    AddSourceDialog *sdialog = new AddSourceDialog(this);
+    sdialog->show();
+
+    if(sdialog->exec() == QDialog::Accepted)
+    {
+        url = sdialog->getSourceURL();
+        name = sdialog->getSourceTitle();
+        delete sdialog;
+    }
+    qDebug() << url;
+    pars = new XMLParser(url, this);
+    pars->downloadXML();
+
+    connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
+}
+
+void NewspaperReader::setupUI()
+{
+    centralWidget = new QWidget(this);
+    centralWidget->setWindowTitle(tr("RSS Reader"));
+
+    centralLayout = new QVBoxLayout;
+
+    rssBox = new QGroupBox(this);
+    rssBox->setTitle(tr("RSS Feed"));
+    setupRSSBox();
+
+    buttonLayout = new QHBoxLayout;
+    buttonSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding);
+    refreshButton = new QPushButton(this);
+    addButton = new QPushButton(this);
+    refreshButton->setText(tr("Refresh"));
+    addButton->setText(tr("Add"));
+
+    buttonLayout->addItem(buttonSpacer);
+    buttonLayout->addWidget(refreshButton);
+    buttonLayout->addWidget(addButton);
+
+
+    centralLayout->addWidget(rssBox);
+    centralLayout->addLayout(buttonLayout);
+
+    centralWidget->setLayout(centralLayout);
+    setCentralWidget(centralWidget);
+}
+
+void NewspaperReader::updateTable()
+{
     for(int i = 0; i < titles.size(); ++i)
     {
-        QStringList items;
-        for(int j = 0; j < titles.at(i).size(); ++j)
-            items << titles.at(i).at(j);
-        qDebug() << QString::number(i + 1) + ": " << items;
+        rssList->addItem(titles.at(i).at(0));
     }
+}
+
+void NewspaperReader::setupRSSBox()
+{
+    QVBoxLayout *rssBoxLayout = new QVBoxLayout;
+    rssList = new QListWidget(this);
+    rssBoxLayout->addWidget(rssList);
+
+    rssBox->setLayout(rssBoxLayout);
 }

@@ -14,7 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         newspaperreader.cpp \
-    xmlparser.cpp
+    xmlparser.cpp \
+    addsourcedialog.cpp
 
 HEADERS  += newspaperreader.hpp \
-    xmlparser.hpp
+    xmlparser.hpp \
+    addsourcedialog.hpp
+
+FORMS += \
+    addsourcedialog.ui

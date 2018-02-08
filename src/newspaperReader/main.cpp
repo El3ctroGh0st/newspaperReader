@@ -2,6 +2,7 @@
 #include <QApplication>
 
 //Change from synchronous to asynchronous
+//Clean-up UI construction code
 
 int main(int argc, char *argv[])
 {
