@@ -5,8 +5,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QSpacerItem>
-#include <QListWidget>
-//#include <QStandardItemModel>
+#include <QTableWidget>
 #include <QVBoxLayout>
 
 #include "xmlparser.hpp"
@@ -29,6 +28,7 @@ public slots:
     void addSource();
 
 private:
+    QString newspaperName;
     QVector<QVector<QString>> titles;
 
     XMLParser *pars = nullptr;
@@ -39,8 +39,7 @@ private:
 
     QGroupBox *rssBox = nullptr;
     QVBoxLayout *rssBoxLayout = nullptr;
-    QListWidget *rssList = nullptr;
-    //QStandardItemModel *rssModel = nullptr;
+    QTableWidget *rssTable = nullptr;
 
     QHBoxLayout *buttonLayout = nullptr;
     QSpacerItem *buttonSpacer = nullptr;

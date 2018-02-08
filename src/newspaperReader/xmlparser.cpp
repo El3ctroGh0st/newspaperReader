@@ -49,8 +49,10 @@ void XMLParser::parseContent()
                 data.clear();
                 data.push_back(qxml->readElementText());
             }
-
-            data.push_back(qxml->readElementText());
+            else
+            {
+                data.push_back(qxml->readElementText());
+            }
         }
         qxml->readNext();
     }

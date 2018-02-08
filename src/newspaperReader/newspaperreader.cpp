@@ -4,6 +4,7 @@
 
 #include <QFormLayout>
 #include <QLabel>
+#include <QTableWidgetItem>
 
 NewspaperReader::NewspaperReader(QWidget *parent)
     : QMainWindow(parent)
@@ -24,6 +25,11 @@ void NewspaperReader::getResult()
 
     for(int i = 0; i < parsedTitles.size(); ++i)
     {
+        parsedTitles[i].push_back(newspaperName);
+    }
+
+    for(int i = 0; i < parsedTitles.size(); ++i)
+    {
         titles.push_back(parsedTitles.at(i));
     }
 
@@ -33,7 +39,7 @@ void NewspaperReader::getResult()
 void NewspaperReader::addSource()
 {
     QUrl url;
-    QString name;
+    newspaperName = "";
 
     AddSourceDialog *sdialog = new AddSourceDialog(this);
     sdialog->show();
@@ -41,10 +47,9 @@ void NewspaperReader::addSource()
     if(sdialog->exec() == QDialog::Accepted)
     {
         url = sdialog->getSourceURL();
-        name = sdialog->getSourceTitle();
+        newspaperName = sdialog->getSourceTitle();
         delete sdialog;
     }
-    qDebug() << url;
     pars = new XMLParser(url, this);
     pars->downloadXML();
 
@@ -79,21 +84,29 @@ void NewspaperReader::setupUI()
 
     centralWidget->setLayout(centralLayout);
     setCentralWidget(centralWidget);
+
+    this->resize(500, 600);
 }
 
 void NewspaperReader::updateTable()
 {
+    rssTable->setRowCount(titles.size());
+    rssTable->setColumnCount(5);
+
     for(int i = 0; i < titles.size(); ++i)
     {
-        rssList->addItem(titles.at(i).at(0));
+        for(int j = 0; j < 5; ++j)
+        {
+                rssTable->setItem(i, j, new QTableWidgetItem(titles.at(i).at(j)));
+        }
     }
 }
 
 void NewspaperReader::setupRSSBox()
 {
     QVBoxLayout *rssBoxLayout = new QVBoxLayout;
-    rssList = new QListWidget(this);
-    rssBoxLayout->addWidget(rssList);
+    rssTable = new QTableWidget(this);
+    rssBoxLayout->addWidget(rssTable);
 
     rssBox->setLayout(rssBoxLayout);
 }
