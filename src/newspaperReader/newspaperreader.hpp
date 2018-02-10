@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QGroupBox>
+#include <QListView>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QTableWidget>
@@ -19,8 +20,9 @@ public:
     ~NewspaperReader();
 
     void setupUI();
-
     void setupRSSBox();
+    void setupSourcesBox();
+
     void updateTable();
 
 public slots:
@@ -34,8 +36,11 @@ private:
     XMLParser *pars = nullptr;
 
     QWidget *centralWidget = nullptr;
-    QVBoxLayout *centralLayout = nullptr;
+    QHBoxLayout *centralLayout = nullptr;
     QMenuBar *menuBar = nullptr;
+
+    QGroupBox *sourcesBox = nullptr;
+    QListView *sourcesList = nullptr;
 
     QGroupBox *rssBox = nullptr;
     QVBoxLayout *rssBoxLayout = nullptr;

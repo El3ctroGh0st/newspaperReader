@@ -2,7 +2,9 @@
 
 #include "addsourcedialog.hpp"
 
+#include <QFont>
 #include <QFormLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QTableWidgetItem>
 
@@ -52,6 +54,7 @@ void NewspaperReader::addSource()
     }
     pars = new XMLParser(url, this);
     pars->downloadXML();
+    qDebug() << url;
 
     connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
 }
@@ -61,11 +64,66 @@ void NewspaperReader::setupUI()
     centralWidget = new QWidget(this);
     centralWidget->setWindowTitle(tr("RSS Reader"));
 
-    centralLayout = new QVBoxLayout;
+    centralLayout = new QHBoxLayout;
+
+    sourcesBox = new QGroupBox(this);
+    sourcesBox->setTitle(tr("Sources"));
 
     rssBox = new QGroupBox(this);
     rssBox->setTitle(tr("RSS Feed"));
+    setupSourcesBox();
     setupRSSBox();
+
+    centralLayout->addWidget(sourcesBox);
+    centralLayout->addWidget(rssBox);
+    centralLayout->addLayout(buttonLayout);
+
+    centralWidget->setLayout(centralLayout);
+    setCentralWidget(centralWidget);
+
+    this->resize(800, 900);
+}
+
+void NewspaperReader::updateTable()
+{
+    QStringList headers;
+    headers << tr("Title") << tr("Newspaper");
+
+    rssTable->setRowCount(titles.size());
+    rssTable->setColumnCount(2);
+    rssTable->setHorizontalHeaderLabels(headers);
+
+    for(int i = 0; i < titles.size(); ++i)
+    {
+        for(int j = 0; j < 5; ++j)
+        {
+            if(j == 0)
+                rssTable->setItem(i, 0, new QTableWidgetItem(titles.at(i).at(0)));
+            if(j == 4)
+                rssTable->setItem(i, 1, new QTableWidgetItem(titles.at(i).at(4)));
+        }
+        rssTable->setColumnWidth(i, 600);
+    }
+
+    QFont tableFont = rssTable->horizontalHeader()->font();
+    tableFont.setPointSize(10);
+    rssTable->setFont(tableFont);
+}
+
+void NewspaperReader::setupSourcesBox()
+{
+    QVBoxLayout *sourcesBoxLayout = new QVBoxLayout;
+    sourcesList = new QListView(this);
+    sourcesList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    sourcesBoxLayout->addWidget(sourcesList);
+
+    sourcesBox->setLayout(sourcesBoxLayout);
+}
+
+void NewspaperReader::setupRSSBox()
+{
+    QVBoxLayout *rssBoxLayout = new QVBoxLayout;
+    rssTable = new QTableWidget(this);
 
     buttonLayout = new QHBoxLayout;
     buttonSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding);
@@ -78,35 +136,8 @@ void NewspaperReader::setupUI()
     buttonLayout->addWidget(refreshButton);
     buttonLayout->addWidget(addButton);
 
-
-    centralLayout->addWidget(rssBox);
-    centralLayout->addLayout(buttonLayout);
-
-    centralWidget->setLayout(centralLayout);
-    setCentralWidget(centralWidget);
-
-    this->resize(500, 600);
-}
-
-void NewspaperReader::updateTable()
-{
-    rssTable->setRowCount(titles.size());
-    rssTable->setColumnCount(5);
-
-    for(int i = 0; i < titles.size(); ++i)
-    {
-        for(int j = 0; j < 5; ++j)
-        {
-                rssTable->setItem(i, j, new QTableWidgetItem(titles.at(i).at(j)));
-        }
-    }
-}
-
-void NewspaperReader::setupRSSBox()
-{
-    QVBoxLayout *rssBoxLayout = new QVBoxLayout;
-    rssTable = new QTableWidget(this);
     rssBoxLayout->addWidget(rssTable);
+    rssBoxLayout->addLayout(buttonLayout);
 
     rssBox->setLayout(rssBoxLayout);
 }
