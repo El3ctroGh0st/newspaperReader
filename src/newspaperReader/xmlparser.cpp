@@ -30,7 +30,7 @@ void XMLParser::parseContent()
     bool mainBody = false;
     QStringList items;
     QVector<QString> data;
-    items << "title" << "link" << "description" << "pubDate";
+    items << "title" << "link" << "pubDate";
 
     while(!(qxml->atEnd()))
     {
@@ -46,6 +46,7 @@ void XMLParser::parseContent()
                 //Prevent from being pushed back on first loop
                 if(!data.empty())
                     titles.push_back(data);
+                qDebug() << data;
                 data.clear();
                 data.push_back(qxml->readElementText());
             }

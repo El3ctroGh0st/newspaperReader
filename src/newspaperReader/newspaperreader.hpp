@@ -6,6 +6,7 @@
 #include <QListView>
 #include <QPushButton>
 #include <QSpacerItem>
+#include <QStringListModel>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -40,6 +41,8 @@ private:
     QMenuBar *menuBar = nullptr;
 
     QGroupBox *sourcesBox = nullptr;
+    QStringList sourcesStringList;
+    QStringListModel *sourcesStringListModel = nullptr;
     QListView *sourcesList = nullptr;
 
     QGroupBox *rssBox = nullptr;
