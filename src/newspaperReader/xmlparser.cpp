@@ -30,7 +30,7 @@ void XMLParser::parseContent()
     bool mainBody = false;
     QStringList items;
     QVector<QString> data;
-    items << "title" << "link" << "pubDate";
+    items << "title"  << "link" << "pubDate";
 
     while(!(qxml->atEnd()))
     {

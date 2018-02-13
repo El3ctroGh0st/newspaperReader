@@ -12,6 +12,8 @@
 
 #include "xmlparser.hpp"
 
+#include "article.hpp"
+
 class NewspaperReader : public QMainWindow
 {
     Q_OBJECT
@@ -31,8 +33,9 @@ public slots:
     void addSource();
 
 private:
+    QVector<Article> articleList;
     QString newspaperName;
-    QVector<QVector<QString>> titles;
+    //QVector<QVector<QString>> titles;
 
     XMLParser *pars = nullptr;
 

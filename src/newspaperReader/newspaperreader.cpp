@@ -27,14 +27,14 @@ void NewspaperReader::getResult()
 
     for(int i = 0; i < parsedTitles.size(); ++i)
     {
-        parsedTitles[i].push_back(newspaperName);
-    }
+        QString name = parsedTitles.at(i).at(0);
+        QUrl link = parsedTitles.at(i).at(1);
+        QString pubDate = parsedTitles.at(i).at(2);
+        QString newspaper = newspaperName;
 
-    for(int i = 0; i < parsedTitles.size(); ++i)
-    {
-        titles.push_back(parsedTitles.at(i));
+        Article article(name, pubDate, link, newspaper);
+        articleList.push_back(article);
     }
-
     updateTable();
 }
 
@@ -89,22 +89,16 @@ void NewspaperReader::updateTable()
     headers << tr("Title") << tr("Newspaper");
     sourcesStringList += newspaperName;
     sourcesStringListModel->setStringList(sourcesStringList);
-    qDebug() << sourcesStringList;
 
     rssTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    rssTable->setRowCount(titles.size());
+    rssTable->setRowCount(articleList.size());
     rssTable->setColumnCount(2);
     rssTable->setHorizontalHeaderLabels(headers);
 
-    for(int i = 0; i < titles.size(); ++i)
+    for(int i = 0; i < articleList.size(); ++i)
     {
-        for(int j = 0; j < titles.at(i).size(); ++j)
-        {
-            if(j == 0)
-                rssTable->setItem(i, 0, new QTableWidgetItem(titles.at(i).at(0)));
-            if(j == 3)
-                rssTable->setItem(i, 1, new QTableWidgetItem(titles.at(i).at(3)));
-        }
+        rssTable->setItem(i, 0, new QTableWidgetItem(articleList.at(i).getTitle()));
+        rssTable->setItem(i, 1, new QTableWidgetItem(articleList.at(i).getNewspaper()));
         rssTable->setColumnWidth(i, 600);
     }
 
