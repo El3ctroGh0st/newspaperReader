@@ -80,7 +80,6 @@ void NewspaperReader::setupUI()
 
     centralLayout->addWidget(sourcesBox);
     centralLayout->addWidget(rssBox);
-    centralLayout->addLayout(buttonLayout);
 
     centralWidget->setLayout(centralLayout);
     setCentralWidget(centralWidget);
