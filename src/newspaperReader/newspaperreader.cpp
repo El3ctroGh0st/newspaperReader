@@ -14,11 +14,11 @@ NewspaperReader::NewspaperReader(QWidget *parent)
     setupUI();
 
     connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSource);
+    connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
 }
 
 NewspaperReader::~NewspaperReader()
 {
-
 }
 
 void NewspaperReader::getResult()
@@ -35,7 +35,9 @@ void NewspaperReader::getResult()
         Article article(name, pubDate, link, newspaper);
         articleList.push_back(article);
     }
-    updateTable();
+    sourcesStringList += newspaperName;
+    sourcesStringListModel->setStringList(sourcesStringList);
+    updateShowList();
 }
 
 void NewspaperReader::addSource()
@@ -51,11 +53,12 @@ void NewspaperReader::addSource()
         url = sdialog->getSourceURL();
         newspaperName = sdialog->getSourceTitle();
         delete sdialog;
-    }
-    pars = new XMLParser(url, this);
-    pars->downloadXML();
 
-    connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
+        pars = new XMLParser(url, this);
+        pars->downloadXML();
+
+        connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
+    }
 }
 
 void NewspaperReader::setupUI()
@@ -85,26 +88,41 @@ void NewspaperReader::setupUI()
 
 void NewspaperReader::updateTable()
 {
+    resetTable();
     QStringList headers;
     headers << tr("Title") << tr("Newspaper");
-    sourcesStringList += newspaperName;
-    sourcesStringListModel->setStringList(sourcesStringList);
 
     rssTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    rssTable->setRowCount(articleList.size());
-    rssTable->setColumnCount(2);
-    rssTable->setHorizontalHeaderLabels(headers);
+    rssModel->setHorizontalHeaderLabels(headers);
 
-    for(int i = 0; i < articleList.size(); ++i)
+    for(int i = 0; i < articleShowList.size(); ++i)
     {
-        rssTable->setItem(i, 0, new QTableWidgetItem(articleList.at(i).getTitle()));
-        rssTable->setItem(i, 1, new QTableWidgetItem(articleList.at(i).getNewspaper()));
-        rssTable->setColumnWidth(i, 600);
+        QList<QStandardItem *> items;
+        items << new QStandardItem(articleShowList.at(i)->getTitle()) << new QStandardItem(articleShowList.at(i)->getNewspaper());
+        rssModel->appendRow(items);
     }
+    rssTable->resizeColumnsToContents();
+    rssTable->resizeRowsToContents();
+}
 
-    QFont tableFont = rssTable->horizontalHeader()->font();
-    tableFont.setPointSize(10);
-    rssTable->setFont(tableFont);
+void NewspaperReader::updateShowList()
+{
+    articleShowList.clear();
+    for(auto i = articleList.begin(); i != articleList.end(); ++i)
+    {
+        if(i->getTags().contains(currentTag))
+        {
+            articleShowList.push_back(&(*i));
+        }
+    }
+    updateTable();
+}
+
+void NewspaperReader::changeFilter()
+{
+    QModelIndex index = sourcesList->currentIndex();
+    currentTag = index.data(Qt::DisplayRole).toString();
+    updateShowList();
 }
 
 void NewspaperReader::setupSourcesBox()
@@ -114,17 +132,26 @@ void NewspaperReader::setupSourcesBox()
     sourcesStringListModel = new QStringListModel(this);
     sourcesList->setModel(sourcesStringListModel);
     sourcesList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    sourcesList->setEditTriggers(QAbstractItemView::NoEditTriggers);
     sourcesBoxLayout->addWidget(sourcesList);
 
     sourcesStringList << "All";
+    sourcesStringListModel->setStringList(sourcesStringList);
 
     sourcesBox->setLayout(sourcesBoxLayout);
+}
+
+void NewspaperReader::resetTable()
+{
+    rssModel->clear();
 }
 
 void NewspaperReader::setupRSSBox()
 {
     QVBoxLayout *rssBoxLayout = new QVBoxLayout;
-    rssTable = new QTableWidget(this);
+    rssTable = new QTableView(this);
+    rssModel = new QStandardItemModel(this);
+    rssTable->setModel(rssModel);
 
     buttonLayout = new QHBoxLayout;
     buttonSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding);

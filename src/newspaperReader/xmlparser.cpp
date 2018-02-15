@@ -46,7 +46,6 @@ void XMLParser::parseContent()
                 //Prevent from being pushed back on first loop
                 if(!data.empty())
                     titles.push_back(data);
-                qDebug() << data;
                 data.clear();
                 data.push_back(qxml->readElementText());
             }

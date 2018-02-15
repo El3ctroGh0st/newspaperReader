@@ -6,8 +6,9 @@
 #include <QListView>
 #include <QPushButton>
 #include <QSpacerItem>
+#include <QStandardItemModel>
 #include <QStringListModel>
-#include <QTableWidget>
+#include <QTableView>
 #include <QVBoxLayout>
 
 #include "xmlparser.hpp"
@@ -22,21 +23,26 @@ public:
     NewspaperReader(QWidget *parent = 0);
     ~NewspaperReader();
 
+    void resetTable();
+
     void setupUI();
     void setupRSSBox();
     void setupSourcesBox();
 
-    void updateTable();
-
 public slots:
     void getResult();
     void addSource();
+    void updateShowList();
+    void updateTable();
+    void changeFilter();
 
 private:
+    QString currentTag = "All";
     QVector<Article> articleList;
+    QVector<Article *> articleShowList;
     QString newspaperName;
-    //QVector<QVector<QString>> titles;
 
+    //UI SETUP
     XMLParser *pars = nullptr;
 
     QWidget *centralWidget = nullptr;
@@ -49,8 +55,9 @@ private:
     QListView *sourcesList = nullptr;
 
     QGroupBox *rssBox = nullptr;
+    QStandardItemModel *rssModel = nullptr;
     QVBoxLayout *rssBoxLayout = nullptr;
-    QTableWidget *rssTable = nullptr;
+    QTableView *rssTable = nullptr;
 
     QHBoxLayout *buttonLayout = nullptr;
     QSpacerItem *buttonSpacer = nullptr;
