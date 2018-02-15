@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGroupBox>
 #include <QListView>
+#include <QPoint>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStandardItemModel>
@@ -37,6 +38,8 @@ public slots:
     void updateTable();
     void changeFilter();
     void openWebsite(const QModelIndex);
+    void rightClickMenu();
+    void deleteArticle();
 
 private:
     QString currentTag = "All";

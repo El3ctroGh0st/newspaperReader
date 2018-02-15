@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QMenu>
 #include <QTableWidgetItem>
 
 NewspaperReader::NewspaperReader(QWidget *parent)
@@ -16,7 +17,6 @@ NewspaperReader::NewspaperReader(QWidget *parent)
 
     connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSourceDialog);
     connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
-    connect(rssTable, &QTableView::doubleClicked, this, &NewspaperReader::openWebsite);
 }
 
 NewspaperReader::~NewspaperReader()
@@ -151,12 +151,42 @@ void NewspaperReader::resetTable()
     rssModel->clear();
 }
 
+void NewspaperReader::deleteArticle()
+{
+    QItemSelectionModel *select = rssTable->selectionModel();
+
+    if(select->hasSelection())
+    {
+        QModelIndexList indexes = select->selectedIndexes();
+
+        for(int i = 0; i < indexes.size(); ++i)
+            articleShowList.erase(articleShowList.begin() + indexes.at(i).row());
+        updateTable();
+    }
+}
+
+void NewspaperReader::rightClickMenu()
+{
+    QMenu *contextMenu = new QMenu(this);
+
+    QAction *deleteAction = new QAction("Delete", this);
+    connect(deleteAction, &QAction::triggered, this, &NewspaperReader::deleteArticle);
+    contextMenu->addAction(deleteAction);
+
+
+    contextMenu->exec(QCursor::pos());
+}
+
 void NewspaperReader::setupRSSBox()
 {
     QVBoxLayout *rssBoxLayout = new QVBoxLayout;
     rssTable = new QTableView(this);
     rssModel = new QStandardItemModel(this);
     rssTable->setModel(rssModel);
+    rssTable->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(rssTable, &QTableView::doubleClicked, this, &NewspaperReader::openWebsite);
+    connect(rssTable, &QTableView::customContextMenuRequested, this, &NewspaperReader::rightClickMenu);
 
     buttonLayout = new QHBoxLayout;
     buttonSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding);
