@@ -2,6 +2,7 @@
 
 #include "addsourcedialog.hpp"
 
+#include <QDesktopServices>
 #include <QFont>
 #include <QFormLayout>
 #include <QHeaderView>
@@ -15,6 +16,7 @@ NewspaperReader::NewspaperReader(QWidget *parent)
 
     connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSource);
     connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
+    connect(rssTable, &QTableView::doubleClicked, this, &NewspaperReader::openWebsite);
 }
 
 NewspaperReader::~NewspaperReader()
@@ -83,7 +85,7 @@ void NewspaperReader::setupUI()
     centralWidget->setLayout(centralLayout);
     setCentralWidget(centralWidget);
 
-    this->resize(1200, 900);
+    resize(1200, 900);
 }
 
 void NewspaperReader::updateTable()
@@ -168,4 +170,10 @@ void NewspaperReader::setupRSSBox()
     rssBoxLayout->addLayout(buttonLayout);
 
     rssBox->setLayout(rssBoxLayout);
+}
+
+void NewspaperReader::openWebsite(const QModelIndex index)
+{
+    Article *article = articleShowList.at(index.row());
+    QDesktopServices::openUrl(article->getLinkAddress());
 }

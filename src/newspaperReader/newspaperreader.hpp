@@ -35,6 +35,7 @@ public slots:
     void updateShowList();
     void updateTable();
     void changeFilter();
+    void openWebsite(const QModelIndex);
 
 private:
     QString currentTag = "All";
