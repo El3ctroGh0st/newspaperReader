@@ -28,10 +28,11 @@ public:
     void setupUI();
     void setupRSSBox();
     void setupSourcesBox();
+    void addSource(const QUrl, const QString);
 
 public slots:
+    void addSourceDialog();
     void getResult();
-    void addSource();
     void updateShowList();
     void updateTable();
     void changeFilter();

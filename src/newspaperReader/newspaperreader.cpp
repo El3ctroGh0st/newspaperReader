@@ -14,7 +14,7 @@ NewspaperReader::NewspaperReader(QWidget *parent)
 {
     setupUI();
 
-    connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSource);
+    connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSourceDialog);
     connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
     connect(rssTable, &QTableView::doubleClicked, this, &NewspaperReader::openWebsite);
 }
@@ -42,25 +42,29 @@ void NewspaperReader::getResult()
     updateShowList();
 }
 
-void NewspaperReader::addSource()
+void NewspaperReader::addSourceDialog()
 {
-    QUrl url;
-    newspaperName = "";
+    QUrl dialogURL;
+    QString dialogNewspaperName;
 
     AddSourceDialog *sdialog = new AddSourceDialog(this);
     sdialog->show();
 
     if(sdialog->exec() == QDialog::Accepted)
     {
-        url = sdialog->getSourceURL();
-        newspaperName = sdialog->getSourceTitle();
+        dialogURL = sdialog->getSourceURL();
+        dialogNewspaperName = sdialog->getSourceTitle();
         delete sdialog;
-
-        pars = new XMLParser(url, this);
-        pars->downloadXML();
-
-        connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
+        addSource(dialogURL, dialogNewspaperName);
     }
+}
+
+void NewspaperReader::addSource(QUrl url, QString name)
+{
+    newspaperName = name;
+    pars = new XMLParser(url, this);
+    pars->downloadXML();
+    connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
 }
 
 void NewspaperReader::setupUI()
