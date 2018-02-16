@@ -20,7 +20,8 @@ SOURCES += main.cpp\
 HEADERS  += newspaperreader.hpp \
     xmlparser.hpp \
     addsourcedialog.hpp \
-    article.hpp
+    article.hpp \
+    newspaper.hpp
 
 FORMS += \
     addsourcedialog.ui

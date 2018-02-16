@@ -1,20 +1,23 @@
 #ifndef NEWSPAPERREADER_HPP
 #define NEWSPAPERREADER_HPP
 
+#include <QCloseEvent>
 #include <QMainWindow>
 #include <QGroupBox>
 #include <QListView>
 #include <QPoint>
 #include <QPushButton>
 #include <QSpacerItem>
+#include <QString>
+#include <QStringList>
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <QTableView>
 #include <QVBoxLayout>
 
 #include "xmlparser.hpp"
-
 #include "article.hpp"
+#include "newspaper.hpp"
 
 class NewspaperReader : public QMainWindow
 {
@@ -31,6 +34,10 @@ public:
     void setupSourcesBox();
     void addSource(const QUrl, const QString);
 
+    void closeEvent(QCloseEvent *event) {emit windowClosed();
+                                         event->accept();}
+    void loadEntries();
+
 public slots:
     void addSourceDialog();
     void getResult();
@@ -40,11 +47,17 @@ public slots:
     void openWebsite(const QModelIndex);
     void rightClickMenu();
     void deleteArticle();
+    void saveEntries();
+
+signals:
+    void windowClosed();
+    void addedEntries();
 
 private:
     QString currentTag = "All";
     QVector<Article> articleList;
     QVector<Article *> articleShowList;
+    QVector<Newspaper *> sourcesVector;
     QString newspaperName;
 
     //UI SETUP
@@ -56,7 +69,7 @@ private:
 
     QGroupBox *sourcesBox = nullptr;
     QStringList sourcesStringList;
-    QStringListModel *sourcesStringListModel = nullptr;
+    QStandardItemModel *sourcesListModel = nullptr;
     QListView *sourcesList = nullptr;
 
     QGroupBox *rssBox = nullptr;

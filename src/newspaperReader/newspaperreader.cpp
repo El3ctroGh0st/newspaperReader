@@ -3,20 +3,25 @@
 #include "addsourcedialog.hpp"
 
 #include <QDesktopServices>
+#include <QEventLoop>
+#include <QFile>
+#include <QFileInfo>
 #include <QFont>
 #include <QFormLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMenu>
-#include <QTableWidgetItem>
 
 NewspaperReader::NewspaperReader(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUI();
 
+    loadEntries();
+
     connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSourceDialog);
     connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
+    connect(this, &NewspaperReader::windowClosed, this, &NewspaperReader::saveEntries);
 }
 
 NewspaperReader::~NewspaperReader()
@@ -33,12 +38,9 @@ void NewspaperReader::getResult()
         QUrl link = parsedTitles.at(i).at(1);
         QString pubDate = parsedTitles.at(i).at(2);
         QString newspaper = newspaperName;
-
         Article article(name, pubDate, link, newspaper);
         articleList.push_back(article);
     }
-    sourcesStringList += newspaperName;
-    sourcesStringListModel->setStringList(sourcesStringList);
     updateShowList();
 }
 
@@ -62,6 +64,9 @@ void NewspaperReader::addSourceDialog()
 void NewspaperReader::addSource(QUrl url, QString name)
 {
     newspaperName = name;
+    sourcesVector.push_back(new Newspaper(name, url));
+    sourcesListModel->appendRow(new QStandardItem(sourcesVector[sourcesVector.size() - 1]->getName()));
+
     pars = new XMLParser(url, this);
     pars->downloadXML();
     connect(pars, &XMLParser::parsingFinished, this, NewspaperReader::getResult);
@@ -108,6 +113,8 @@ void NewspaperReader::updateTable()
     }
     rssTable->resizeColumnsToContents();
     rssTable->resizeRowsToContents();
+
+    emit addedEntries();
 }
 
 void NewspaperReader::updateShowList()
@@ -134,15 +141,16 @@ void NewspaperReader::setupSourcesBox()
 {
     QVBoxLayout *sourcesBoxLayout = new QVBoxLayout;
     sourcesList = new QListView(this);
-    sourcesStringListModel = new QStringListModel(this);
-    sourcesList->setModel(sourcesStringListModel);
+    sourcesListModel = new QStandardItemModel(this);
+    sourcesList->setModel(sourcesListModel);
     sourcesList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     sourcesList->setEditTriggers(QAbstractItemView::NoEditTriggers);
     sourcesBoxLayout->addWidget(sourcesList);
 
-    sourcesStringList << "All";
-    sourcesStringListModel->setStringList(sourcesStringList);
-
+    QStandardItem *allTag = new QStandardItem("All");
+    sourcesListModel->appendRow(allTag);
+//    QModelIndex allRow = sourcesListModel->index(1, 1);
+//    sourcesList->selectionModel()->select(allRow, QItemSelectionModel::Select);
     sourcesBox->setLayout(sourcesBoxLayout);
 }
 
@@ -203,6 +211,56 @@ void NewspaperReader::setupRSSBox()
     rssBoxLayout->addLayout(buttonLayout);
 
     rssBox->setLayout(rssBoxLayout);
+}
+
+void NewspaperReader::saveEntries()
+{
+    QFile file("sources.txt");
+
+    if(!file.open(QIODevice::WriteOnly))
+        qWarning() << "Failed to save entries!";
+
+    QTextStream out(&file);
+
+    for(int i = 0; i < sourcesVector.size(); ++i)
+    {
+        out << sourcesVector.at(i)->getName() << "\t" << sourcesVector.at(i)->getURL().toString();
+        if(i != sourcesVector.size() - 1)
+            out << "\n";
+    }
+
+    file.close();
+}
+
+void NewspaperReader::loadEntries()
+{
+    QFile file("sources.txt");
+
+    if(!file.open(QIODevice::ReadOnly))
+        qWarning() << "Failed to load entries!";
+
+    QTextStream inputStream(&file);
+    QString text = inputStream.readAll();
+    QStringList textList = text.split('\n');
+    QVector<QPair<QString, QUrl>> entries;
+
+    for(int i = 0; i < textList.size(); ++i)
+    {
+        QString temp = textList.at(i);
+        temp.remove(QRegExp("\\r"));
+        QStringList entryList = temp.split('\t');
+        qDebug() << entryList.at(0) << " " << entryList.at(1);
+        entries.push_back(qMakePair(entryList.at(0), QUrl(entryList.at(1))));
+    }
+
+    for(int i = 0; i < entries.size(); ++i)
+    {
+        addSource(QUrl(entries.at(i).second), entries.at(i).first);
+
+        QEventLoop pauseLoop;
+        connect(this, &NewspaperReader::addedEntries, &pauseLoop, &QEventLoop::quit);
+        pauseLoop.exec();
+    }
 }
 
 void NewspaperReader::openWebsite(const QModelIndex index)

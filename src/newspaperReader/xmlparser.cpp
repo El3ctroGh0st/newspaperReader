@@ -7,6 +7,7 @@
 
 void XMLParser::downloadXML()
 {
+    qDebug() << downloadLink;
     QNetworkRequest qreq(downloadLink);
     QNetworkAccessManager *qmanag = new QNetworkAccessManager(this);
 
