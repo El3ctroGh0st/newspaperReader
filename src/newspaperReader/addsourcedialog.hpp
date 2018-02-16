@@ -20,7 +20,7 @@ public:
     QUrl getSourceURL() const { return sourceURL; }
 
 public slots:
-    void checkEmptyFields(QString text);
+    void checkEmptyFields();
 
 private:
     Ui::AddSourceDialog *ui;

@@ -237,10 +237,17 @@ void NewspaperReader::loadEntries()
     QFile file("sources.txt");
 
     if(!file.open(QIODevice::ReadOnly))
+    {
         qWarning() << "Failed to load entries!";
+        return;
+    }
 
     QTextStream inputStream(&file);
     QString text = inputStream.readAll();
+
+    if(text.isEmpty())
+        return;
+
     QStringList textList = text.split('\n');
     QVector<QPair<QString, QUrl>> entries;
 

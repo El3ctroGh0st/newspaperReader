@@ -25,7 +25,7 @@ AddSourceDialog::~AddSourceDialog()
     delete ui;
 }
 
-void AddSourceDialog::checkEmptyFields(QString text)
+void AddSourceDialog::checkEmptyFields()
 {
     if(!(ui->sourceAddressEdit->text().isEmpty()) && !(ui->sourceNameEdit->text().isEmpty()))
     {
