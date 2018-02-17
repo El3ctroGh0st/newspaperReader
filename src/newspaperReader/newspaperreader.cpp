@@ -23,7 +23,7 @@ NewspaperReader::NewspaperReader(QWidget *parent)
 
     connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSourceDialog);
     connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
-    connect(this, &NewspaperReader::windowClosed, this, &NewspaperReader::saveEntries);
+    //connect(this, &NewspaperReader::windowClosed, this, &NewspaperReader::saveEntries);
 }
 
 NewspaperReader::~NewspaperReader()
@@ -51,15 +51,20 @@ void NewspaperReader::addSourceDialog()
     QUrl dialogURL;
     QString dialogNewspaperName;
 
-    AddSourceDialog *sdialog = new AddSourceDialog(this);
-    sdialog->show();
-
-    if(sdialog->exec() == QDialog::Accepted)
+    if(!openSourceWindow)
     {
-        dialogURL = sdialog->getSourceURL();
-        dialogNewspaperName = sdialog->getSourceTitle();
-        delete sdialog;
-        addSource(dialogURL, dialogNewspaperName);
+        AddSourceDialog *sdialog = new AddSourceDialog(this);
+        openSourceWindow = true;
+        sdialog->show();
+
+        if(sdialog->exec() == QDialog::Accepted)
+        {
+            dialogURL = sdialog->getSourceURL();
+            dialogNewspaperName = sdialog->getSourceTitle();
+            delete sdialog;
+            addSource(dialogURL, dialogNewspaperName);
+        }
+        openSourceWindow = false;
     }
 }
 
@@ -68,6 +73,7 @@ void NewspaperReader::addSource(QUrl url, QString name)
     newspaperName = name;
     sourcesVector.push_back(new Newspaper(name, url));
     sourcesListModel->appendRow(new QStandardItem(sourcesVector[sourcesVector.size() - 1]->getName()));
+    saveEntries();
 
     pars = new XMLParser(url, this);
     pars->downloadXML();
@@ -169,7 +175,6 @@ void NewspaperReader::deleteArticle()
     {
         QModelIndexList indexes = select->selectedIndexes();
         std::sort(indexes.begin(), indexes.end());
-        QVector<Article *> articles;
 
         for(int i = 0; i < indexes.size(); ++i)
         {
@@ -185,6 +190,7 @@ void NewspaperReader::deleteArticle()
 
             articleList.erase(articleList.begin() + realIndex);
         }
+        updateShowList();
         updateTable();
     }
 }

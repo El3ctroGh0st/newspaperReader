@@ -82,6 +82,8 @@ private:
     QPushButton *refreshButton = nullptr;
     QPushButton *addButton = nullptr;
 
+    bool openSourceWindow = false;
+
 };
 
 #endif // NEWSPAPERREADER_HPP
