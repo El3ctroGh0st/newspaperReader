@@ -2,6 +2,8 @@
 
 #include "addsourcedialog.hpp"
 
+#include <cstdlib>
+
 #include <QDesktopServices>
 #include <QEventLoop>
 #include <QFile>
@@ -166,9 +168,23 @@ void NewspaperReader::deleteArticle()
     if(select->hasSelection())
     {
         QModelIndexList indexes = select->selectedIndexes();
+        std::sort(indexes.begin(), indexes.end());
+        QVector<Article *> articles;
 
         for(int i = 0; i < indexes.size(); ++i)
-            articleShowList.erase(articleShowList.begin() + indexes.at(i).row());
+        {
+            QUrl link = articleShowList.at(indexes.at(i).row() - i)->getLinkAddress();
+            bool found = false;
+            int realIndex = 0;
+
+            for(int j = 0; j < articleList.size() && !found; ++j)
+            {
+                if(articleList.at(j).getLinkAddress() == link)
+                    realIndex = j;
+            }
+
+            articleList.erase(articleList.begin() + realIndex);
+        }
         updateTable();
     }
 }
