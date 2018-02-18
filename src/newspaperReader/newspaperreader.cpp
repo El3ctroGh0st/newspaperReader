@@ -23,7 +23,6 @@ NewspaperReader::NewspaperReader(QWidget *parent)
 
     connect(addButton, &QPushButton::pressed, this, &NewspaperReader::addSourceDialog);
     connect(sourcesList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NewspaperReader::changeFilter);
-    //connect(this, &NewspaperReader::windowClosed, this, &NewspaperReader::saveEntries);
 }
 
 NewspaperReader::~NewspaperReader()
@@ -153,7 +152,10 @@ void NewspaperReader::setupSourcesBox()
     sourcesList->setModel(sourcesListModel);
     sourcesList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     sourcesList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    sourcesList->setContextMenuPolicy(Qt::CustomContextMenu);
     sourcesBoxLayout->addWidget(sourcesList);
+
+    connect(sourcesList, &QListView::customContextMenuRequested, this, &NewspaperReader::rightCLickMenuSourcesList);
 
     QStandardItem *allTag = new QStandardItem("All");
     sourcesListModel->appendRow(allTag);
@@ -167,10 +169,33 @@ void NewspaperReader::resetTable()
     rssModel->clear();
 }
 
-void NewspaperReader::deleteArticle()
+void NewspaperReader::sourcesDeletion()
+{
+    rssTable->clearSelection();
+    QString newspaper = sourcesList->currentIndex().data(Qt::DisplayRole).toString();
+    sourcesListModel->removeRow(sourcesList->currentIndex().row());
+
+    auto it = articleList.begin();
+
+    while(it != articleList.end())
+    {
+        if(it->getNewspaper() == newspaper)
+            it = articleList.erase(it);
+        else
+            ++it;
+    }
+
+    updateShowList();
+}
+
+void NewspaperReader::manualDeletion()
 {
     QItemSelectionModel *select = rssTable->selectionModel();
+    deleteArticle(select);
+}
 
+void NewspaperReader::deleteArticle(QItemSelectionModel *select)
+{
     if(select->hasSelection())
     {
         QModelIndexList indexes = select->selectedIndexes();
@@ -195,12 +220,24 @@ void NewspaperReader::deleteArticle()
     }
 }
 
-void NewspaperReader::rightClickMenu()
+void NewspaperReader::rightCLickMenuSourcesList()
 {
     QMenu *contextMenu = new QMenu(this);
 
     QAction *deleteAction = new QAction("Delete", this);
-    connect(deleteAction, &QAction::triggered, this, &NewspaperReader::deleteArticle);
+    connect(deleteAction, &QAction::triggered, this, &NewspaperReader::sourcesDeletion);
+    contextMenu->addAction(deleteAction);
+
+
+    contextMenu->exec(QCursor::pos());
+}
+
+void NewspaperReader::rightClickMenuRSSBox()
+{
+    QMenu *contextMenu = new QMenu(this);
+
+    QAction *deleteAction = new QAction("Delete", this);
+    connect(deleteAction, &QAction::triggered, this, &NewspaperReader::manualDeletion);
     contextMenu->addAction(deleteAction);
 
 
@@ -216,7 +253,7 @@ void NewspaperReader::setupRSSBox()
     rssTable->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(rssTable, &QTableView::doubleClicked, this, &NewspaperReader::openWebsite);
-    connect(rssTable, &QTableView::customContextMenuRequested, this, &NewspaperReader::rightClickMenu);
+    connect(rssTable, &QTableView::customContextMenuRequested, this, &NewspaperReader::rightClickMenuRSSBox);
 
     buttonLayout = new QHBoxLayout;
     buttonSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding);

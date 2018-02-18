@@ -45,8 +45,11 @@ public slots:
     void updateTable();
     void changeFilter();
     void openWebsite(const QModelIndex);
-    void rightClickMenu();
-    void deleteArticle();
+    void rightClickMenuRSSBox();
+    void rightCLickMenuSourcesList();
+    void sourcesDeletion();
+    void manualDeletion();
+    void deleteArticle(QItemSelectionModel*);
     void saveEntries();
 
 signals:
